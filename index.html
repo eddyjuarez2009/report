@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gershon Consulting — One-Pager Generator</title>
+  <meta name="description" content="Generate a polished client one-pager PDF from a Google Drive folder." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23CC3333'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' font-weight='600' font-style='italic' text-anchor='middle' fill='white'%3EG%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #FAF8F5;
+      color: #1A1A1A;
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .serif { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; }
+    .mono { font-family: 'JetBrains Mono', 'SF Mono', monospace; letter-spacing: -0.01em; }
+    .sans { font-family: 'Inter', sans-serif; }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #CC3333;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+    .micro-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #8A857E;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+
+    /* Header */
+    header.site {
+      border-bottom: 1px solid #E8E4DE;
+      background: #FFFFFF;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      background: #CC3333;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 18px;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1;
+    }
+    .brand-text-tiny {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #8A857E;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+    .brand-text-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 18px;
+      font-weight: 500;
+      color: #1A1A1A;
+      margin-top: 1px;
+    }
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .meta-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #8A857E;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+    .meta-divider {
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      margin-left: 12px;
+      padding-left: 12px;
+      border-left: 1px solid #E8E4DE;
+      opacity: 0.7;
+      font-family: 'JetBrains Mono', monospace;
+      color: #8A857E;
+    }
+    .lock-icon { width: 12px; height: 12px; stroke: #8A857E; }
+
+    /* Main */
+    main.page {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 72px 32px 96px;
+    }
+    .container { max-width: 720px; }
+
+    h1.headline {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 56px;
+      line-height: 1.05;
+      font-weight: 400;
+      color: #1A1A1A;
+      margin: 28px 0 0;
+      letter-spacing: -0.02em;
+    }
+    h1.headline em {
+      font-style: italic;
+      color: #CC3333;
+      font-weight: 400;
+    }
+    p.lede {
+      font-size: 17px;
+      line-height: 1.6;
+      color: #3d3d3d;
+      margin-top: 28px;
+      max-width: 640px;
+    }
+
+    /* Form fields */
+    .field-block { margin-top: 36px; }
+    .field-label {
+      display: block;
+      margin-bottom: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #8A857E;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .field-required { color: #CC3333; }
+    .input-shell {
+      display: flex;
+      align-items: stretch;
+      border: 1px solid #E8E4DE;
+      background: #FFFFFF;
+      transition: border 0.15s;
+    }
+    .input-shell:focus-within { border-color: #CC3333; }
+    .input-shell.error { border-color: #CC3333; }
+    .input-prefix {
+      padding: 16px 14px 16px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #8A857E;
+      border-right: 1px solid #E8E4DE;
+      display: flex;
+      align-items: center;
+      background: #FAF8F5;
+    }
+    .input-field {
+      flex: 1;
+      border: none;
+      padding: 16px 18px;
+      font-size: 17px;
+      font-family: 'Inter', sans-serif;
+      color: #1A1A1A;
+      background: transparent;
+      min-width: 0;
+    }
+    .input-field:focus { outline: none; }
+    .input-field::placeholder { color: #B8B2A9; }
+    .field-hint {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #8A857E;
+    }
+    .field-error {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #CC3333;
+      display: none;
+    }
+    .field-error.show { display: block; }
+
+    /* Buttons */
+    .btn-primary {
+      background: #CC3333;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+      letter-spacing: 0.02em;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-primary:hover:not(:disabled) { background: #A82828; }
+    .btn-primary:disabled { background: #CFC9C1; cursor: not-allowed; }
+    .btn-ghost {
+      background: none;
+      border: none;
+      color: #8A857E;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      padding: 0;
+    }
+    .btn-ghost:hover { color: #1A1A1A; }
+
+    .actions-row {
+      margin-top: 36px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .spinner {
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 9999px;
+      width: 14px;
+      height: 14px;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.35s ease-out; }
+
+    /* What we'll do section */
+    .info-section {
+      margin-top: 72px;
+      border-top: 1px solid #E8E4DE;
+      padding-top: 32px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-top: 20px;
+    }
+    .info-card {
+      border-left: 2px solid #CC3333;
+      padding-left: 16px;
+    }
+    .info-card-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #CC3333;
+      letter-spacing: 0.15em;
+    }
+    .info-card-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 17px;
+      color: #1A1A1A;
+      margin-top: 4px;
+      font-style: italic;
+    }
+    .info-card ul {
+      margin: 10px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .info-card li {
+      font-size: 13px;
+      color: #3d3d3d;
+      padding: 3px 0;
+    }
+    .info-footer-note {
+      margin-top: 28px;
+      font-size: 13px;
+      color: #8A857E;
+      font-style: italic;
+    }
+
+    /* Result cards */
+    .result-card {
+      margin-top: 40px;
+      border: 1px solid #E8E4DE;
+      background: #FFFFFF;
+      padding: 28px;
+    }
+    .result-row {
+      padding: 10px 0;
+      border-bottom: 1px solid #F0EDE7;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-row-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #8A857E;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      margin-bottom: 4px;
+    }
+    .result-row-value {
+      font-size: 14px;
+      color: #1A1A1A;
+      word-break: break-all;
+    }
+    .result-row-value.mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #3d3d3d;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 720px) {
+      .header-inner { padding: 14px 20px; }
+      main.page { padding: 48px 20px 72px; }
+      h1.headline { font-size: 38px; }
+      p.lede { font-size: 16px; }
+      .info-grid { grid-template-columns: 1fr; }
+      .input-field { font-size: 16px; padding: 14px 16px; }
+      .input-prefix { padding: 14px 12px 14px 16px; }
+      .header-meta .meta-divider { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="logo-mark">G</span>
+        <div>
+          <div class="brand-text-tiny">Gershon Consulting</div>
+          <div class="brand-text-title">One-Pager Generator</div>
+        </div>
+      </div>
+      <div class="header-meta">
+        <svg xmlns="http://www.w3.org/2000/svg" class="lock-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span class="meta-pill">Preview · Launching soon</span>
+        <span class="meta-divider" id="buildTag">v0.1</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+
+    <!-- Initial form view -->
+    <div class="container fade-in" id="formView">
+
+      <div class="eyebrow">— Report Generator · Est. 2 minutes</div>
+
+      <h1 class="headline">
+        Generate your client <em>one-pager</em> from a Drive folder.
+      </h1>
+
+      <p class="lede">
+        Point us at the Google Drive folder containing the campaign's artifacts.
+        Our agent reads the files, extracts the KPIs, and emails you back a
+        polished one-pager PDF — same format you've seen before.
+      </p>
+
+      <!--
+        Preview deploy: form is wired up visually but the backend (n8n agent)
+        is not connected yet. Submission shows a "launching soon" message.
+        When ready, restore action/method/enctype/target and re-enable the
+        iframe-based submit flow (see git history).
+      -->
+      <form
+        id="reportForm"
+        novalidate
+      >
+
+        <!-- Client name -->
+        <div class="field-block">
+          <label class="field-label" for="clientName">Client name</label>
+          <div class="input-shell">
+            <input
+              id="clientName"
+              name="Client name"
+              type="text"
+              class="input-field sans"
+              maxlength="120"
+              placeholder="MAbSilico"
+              autocomplete="organization"
+            />
+          </div>
+        </div>
+
+        <!-- Client logo URL -->
+        <div class="field-block">
+          <label class="field-label" for="clientLogo">Client logo URL <span style="color:#B8B2A9; letter-spacing:0;">— optional</span></label>
+          <div class="input-shell">
+            <span class="input-prefix">https://</span>
+            <input
+              id="clientLogo"
+              name="Client logo URL"
+              type="url"
+              class="input-field sans"
+              placeholder="client.com/logo.png"
+              autocomplete="off"
+            />
+          </div>
+        </div>
+
+        <!-- Google Drive folder URL -->
+        <div class="field-block">
+          <label class="field-label" for="folderUrl">Google Drive folder URL <span class="field-required">*</span></label>
+          <div class="input-shell" id="folderShell">
+            <input
+              id="folderUrl"
+              name="Google Drive folder URL"
+              type="url"
+              required
+              class="input-field sans"
+              placeholder="https://drive.google.com/drive/folders/…"
+              autocomplete="off"
+            />
+          </div>
+          <p class="field-hint">Share the folder with the Gershon agent service account (Viewer is enough).</p>
+          <p class="field-error" id="folderUrlError"></p>
+        </div>
+
+        <!-- Recipient email -->
+        <div class="field-block">
+          <label class="field-label" for="email">Recipient email <span class="field-required">*</span></label>
+          <div class="input-shell" id="emailShell">
+            <input
+              id="email"
+              name="Recipient email"
+              type="email"
+              required
+              class="input-field sans"
+              placeholder="you@company.com"
+              autocomplete="email"
+            />
+          </div>
+          <p class="field-error" id="emailError"></p>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions-row">
+          <button class="btn-primary" id="submitBtn" type="submit">
+            <span id="submitLabel">Generate one-pager</span>
+            <span id="submitSpinner" class="hidden" style="display:none; align-items:center; gap:8px;">
+              <span class="spinner"></span>
+              <span style="font-size:13px;">Sending…</span>
+            </span>
+            <svg id="submitArrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </button>
+          <a class="btn-ghost" href="mailto:info@gershonconsulting.com?subject=One-pager%20question">Questions? Email us</a>
+        </div>
+      </form>
+
+      <!-- iframe target reserved for future n8n re-connection -->
+      <iframe name="n8nSubmitFrame" id="n8nSubmitFrame" title="reserved" style="display:none" aria-hidden="true"></iframe>
+
+      <!-- "What you'll receive" section -->
+      <div class="info-section">
+        <div class="micro-label">What we'll send back</div>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-number">SECTION 01</div>
+            <div class="info-card-title">Headline KPIs</div>
+            <ul>
+              <li>— Opportunities generated</li>
+              <li>— Acceptance rate</li>
+              <li>— Connections &amp; messages sent</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <div class="info-card-number">SECTION 02</div>
+            <div class="info-card-title">Lead Source Performance</div>
+            <ul>
+              <li>— Initial messages</li>
+              <li>— InMails</li>
+              <li>— Follow-ups</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <div class="info-card-number">SECTION 03</div>
+            <div class="info-card-title">Industry &amp; Demographics</div>
+            <ul>
+              <li>— Industries by opportunity</li>
+              <li>— Company size breakdown</li>
+              <li>— Charts (bar + donut)</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <div class="info-card-number">SECTION 04</div>
+            <div class="info-card-title">Next Move</div>
+            <ul>
+              <li>— Strategic summary</li>
+              <li>— Recommended next action</li>
+              <li>— Strategy call CTA</li>
+            </ul>
+          </div>
+        </div>
+        <div class="info-footer-note">
+          Files in the shared folder are read by a private agent — nothing is stored after the PDF is generated.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Preview "launching soon" view (replaces real success during preview) -->
+    <div class="container fade-in hidden" id="successView">
+      <div class="eyebrow">— Coming soon</div>
+      <h1 class="headline">We're putting the finishing <em>touches</em>.</h1>
+      <p class="lede">
+        Thanks for trying the generator. The agent that turns Drive folders into one-pagers is being connected as we speak — once it's live, submitting this form will email you back a PDF in a few minutes.
+      </p>
+
+      <div class="result-card">
+        <div class="result-row hidden" id="successClientRow">
+          <div class="result-row-label">Client</div>
+          <div class="result-row-value" id="successClient"></div>
+        </div>
+        <div class="result-row">
+          <div class="result-row-label">You entered</div>
+          <div class="result-row-value" id="successEmail"></div>
+        </div>
+        <div class="result-row">
+          <div class="result-row-label">Source folder</div>
+          <div class="result-row-value mono" id="successFolder"></div>
+        </div>
+        <div class="result-row">
+          <div class="result-row-label">Status</div>
+          <div class="result-row-value">Preview only — not submitted to the agent.</div>
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn-primary" id="newReportBtn" type="button">
+          Try again
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+          </svg>
+        </button>
+        <a class="btn-ghost" href="https://gershonconsulting.com">Back to gershonconsulting.com</a>
+      </div>
+    </div>
+
+    <!-- Error view -->
+    <div class="container fade-in hidden" id="errorView">
+      <div class="eyebrow">— Delivery issue</div>
+      <h1 class="headline">We couldn't reach the <em>agent</em>.</h1>
+      <p class="lede" id="errorMessage">Please try again in a moment, or double-check the Drive folder link is valid and shared correctly.</p>
+
+      <div class="actions-row">
+        <button class="btn-primary" id="retryBtn" type="button">
+          Try again
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // ============ Elements ============
+    const form = document.getElementById('reportForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitLabel = document.getElementById('submitLabel');
+    const submitSpinner = document.getElementById('submitSpinner');
+    const submitArrow = document.getElementById('submitArrow');
+
+    const formView = document.getElementById('formView');
+    const successView = document.getElementById('successView');
+    const errorView = document.getElementById('errorView');
+    const iframe = document.getElementById('n8nSubmitFrame');
+
+    const folderInput = document.getElementById('folderUrl');
+    const emailInput = document.getElementById('email');
+    const clientInput = document.getElementById('clientName');
+
+    const folderShell = document.getElementById('folderShell');
+    const emailShell = document.getElementById('emailShell');
+    const folderError = document.getElementById('folderUrlError');
+    const emailError = document.getElementById('emailError');
+
+    // ============ Validation ============
+    function validateDriveUrl(url) {
+      try {
+        const u = new URL(url);
+        if (!/(^|\.)google\.com$/.test(u.hostname)) return false;
+        return /\/folders\/[A-Za-z0-9_-]{10,}/.test(u.pathname);
+      } catch (_) { return false; }
+    }
+    function validateEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }
+    function showFieldError(shell, msgEl, msg) {
+      shell.classList.add('error');
+      msgEl.textContent = msg;
+      msgEl.classList.add('show');
+    }
+    function clearFieldError(shell, msgEl) {
+      shell.classList.remove('error');
+      msgEl.classList.remove('show');
+    }
+    folderInput.addEventListener('input', () => clearFieldError(folderShell, folderError));
+    emailInput.addEventListener('input', () => clearFieldError(emailShell, emailError));
+
+    // ============ Views ============
+    function show(view) {
+      formView.classList.add('hidden');
+      successView.classList.add('hidden');
+      errorView.classList.add('hidden');
+      view.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function setSubmitting(isSubmitting) {
+      submitBtn.disabled = isSubmitting;
+      submitLabel.classList.toggle('hidden', isSubmitting);
+      submitArrow.classList.toggle('hidden', isSubmitting);
+      submitSpinner.style.display = isSubmitting ? 'inline-flex' : 'none';
+      submitSpinner.classList.toggle('hidden', !isSubmitting);
+    }
+
+    function showSuccess({ folderUrl, email, clientName }) {
+      document.getElementById('successEmail').textContent = email;
+      document.getElementById('successFolder').textContent = folderUrl;
+      document.getElementById('successTime').textContent = new Date().toLocaleString();
+      const clientRow = document.getElementById('successClientRow');
+      if (clientName && clientName.trim()) {
+        document.getElementById('successClient').textContent = clientName.trim();
+        clientRow.classList.remove('hidden');
+      } else {
+        clientRow.classList.add('hidden');
+      }
+      show(successView);
+    }
+
+    function showError(msg) {
+      if (msg) document.getElementById('errorMessage').textContent = msg;
+      show(errorView);
+    }
+
+    document.getElementById('newReportBtn').addEventListener('click', () => {
+      form.reset();
+      clearFieldError(folderShell, folderError);
+      clearFieldError(emailShell, emailError);
+      show(formView);
+    });
+    document.getElementById('retryBtn').addEventListener('click', () => show(formView));
+
+    // ============ Submit (preview mode — no backend) ============
+    // Validates the inputs and shows the "Coming soon" success view without
+    // sending anything to a backend. When n8n is wired up, restore the form
+    // action/method/enctype/target attributes and the iframe success handler.
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      let ok = true;
+      const folderUrl = folderInput.value.trim();
+      const email = emailInput.value.trim();
+      const clientName = clientInput.value.trim();
+
+      if (!validateDriveUrl(folderUrl)) {
+        showFieldError(folderShell, folderError, "Please paste a Google Drive folder URL (must contain /folders/<id>).");
+        ok = false;
+      }
+      if (!validateEmail(email)) {
+        showFieldError(emailShell, emailError, "Please enter a valid email address.");
+        ok = false;
+      }
+      if (!ok) return;
+
+      setSubmitting(true);
+      // Simulate a brief "thinking" moment so the state change doesn't feel jarring.
+      setTimeout(() => {
+        setSubmitting(false);
+        showSuccess({ folderUrl, email, clientName });
+      }, 600);
+    });
+  </script>
+</body>
+</html>
