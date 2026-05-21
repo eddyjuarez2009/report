@@ -361,7 +361,8 @@
           <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
           <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
         </svg>
-        <span class="meta-pill">Preview · Launching soon</span>
+        <!-- EDIT 2: changed from "Preview · Launching soon" to "Secured · Private agent" -->
+        <span class="meta-pill">Secured · Private agent</span>
         <span class="meta-divider" id="buildTag">v0.1</span>
       </div>
     </div>
@@ -384,14 +385,13 @@
         polished one-pager PDF — same format you've seen before.
       </p>
 
-      <!--
-        Preview deploy: form is wired up visually but the backend (n8n agent)
-        is not connected yet. Submission shows a "launching soon" message.
-        When ready, restore action/method/enctype/target and re-enable the
-        iframe-based submit flow (see git history).
-      -->
+      <!-- EDIT 1: restored action, method, enctype, target -->
       <form
         id="reportForm"
+        action="https://gershonconsulting.app.n8n.cloud/form/2d07b6f9-b0a5-401c-876b-28879a1b0c7e"
+        method="POST"
+        enctype="multipart/form-data"
+        target="n8nSubmitFrame"
         novalidate
       >
 
@@ -479,7 +479,7 @@
         </div>
       </form>
 
-      <!-- iframe target reserved for future n8n re-connection -->
+      <!-- iframe target for n8n form submission -->
       <iframe name="n8nSubmitFrame" id="n8nSubmitFrame" title="reserved" style="display:none" aria-hidden="true"></iframe>
 
       <!-- "What you'll receive" section -->
@@ -530,12 +530,12 @@
 
     </div>
 
-    <!-- Preview "launching soon" view (replaces real success during preview) -->
+    <!-- EDIT 3: success view updated for live mode -->
     <div class="container fade-in hidden" id="successView">
-      <div class="eyebrow">— Coming soon</div>
-      <h1 class="headline">We're putting the finishing <em>touches</em>.</h1>
+      <div class="eyebrow">— Submitted</div>
+      <h1 class="headline">Your one-pager is on its <em>way</em>.</h1>
       <p class="lede">
-        Thanks for trying the generator. The agent that turns Drive folders into one-pagers is being connected as we speak — once it's live, submitting this form will email you back a PDF in a few minutes.
+        The agent is reading your folder now. You'll get the PDF at the email below in a few minutes.
       </p>
 
       <div class="result-card">
@@ -544,22 +544,18 @@
           <div class="result-row-value" id="successClient"></div>
         </div>
         <div class="result-row">
-          <div class="result-row-label">You entered</div>
+          <div class="result-row-label">PDF will be sent to</div>
           <div class="result-row-value" id="successEmail"></div>
         </div>
         <div class="result-row">
           <div class="result-row-label">Source folder</div>
           <div class="result-row-value mono" id="successFolder"></div>
         </div>
-        <div class="result-row">
-          <div class="result-row-label">Status</div>
-          <div class="result-row-value">Preview only — not submitted to the agent.</div>
-        </div>
       </div>
 
       <div class="actions-row">
         <button class="btn-primary" id="newReportBtn" type="button">
-          Try again
+          Generate another
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M5 12h14"></path>
             <path d="m12 5 7 7-7 7"></path>
@@ -573,7 +569,7 @@
     <div class="container fade-in hidden" id="errorView">
       <div class="eyebrow">— Delivery issue</div>
       <h1 class="headline">We couldn't reach the <em>agent</em>.</h1>
-      <p class="lede" id="errorMessage">Please try again in a moment, or double-check the Drive folder link is valid and shared correctly.</p>
+      <p class="lede" id="errorMessage">The agent took longer than expected. Your request may still be processing — check your inbox in a few minutes.</p>
 
       <div class="actions-row">
         <button class="btn-primary" id="retryBtn" type="button">
@@ -653,7 +649,6 @@
     function showSuccess({ folderUrl, email, clientName }) {
       document.getElementById('successEmail').textContent = email;
       document.getElementById('successFolder').textContent = folderUrl;
-      document.getElementById('successTime').textContent = new Date().toLocaleString();
       const clientRow = document.getElementById('successClientRow');
       if (clientName && clientName.trim()) {
         document.getElementById('successClient').textContent = clientName.trim();
@@ -677,12 +672,8 @@
     });
     document.getElementById('retryBtn').addEventListener('click', () => show(formView));
 
-    // ============ Submit (preview mode — no backend) ============
-    // Validates the inputs and shows the "Coming soon" success view without
-    // sending anything to a backend. When n8n is wired up, restore the form
-    // action/method/enctype/target attributes and the iframe success handler.
+    // EDIT 4: real iframe-based submit handler (replaces preview mode stub)
     form.addEventListener('submit', (e) => {
-      e.preventDefault();
       let ok = true;
       const folderUrl = folderInput.value.trim();
       const email = emailInput.value.trim();
@@ -696,14 +687,40 @@
         showFieldError(emailShell, emailError, "Please enter a valid email address.");
         ok = false;
       }
-      if (!ok) return;
+      if (!ok) { e.preventDefault(); return; }
 
+      // Store values before form submit clears them
+      form.dataset.lastFolder = folderUrl;
+      form.dataset.lastEmail = email;
+      form.dataset.lastClient = clientName;
       setSubmitting(true);
-      // Simulate a brief "thinking" moment so the state change doesn't feel jarring.
-      setTimeout(() => {
-        setSubmitting(false);
-        showSuccess({ folderUrl, email, clientName });
-      }, 600);
+      // Native form submit fires → iframe loads with n8n response
+    });
+
+    // Show success card when iframe confirms n8n received the submission
+    let iframeLoadCount = 0;
+    iframe.addEventListener('load', () => {
+      iframeLoadCount++;
+      if (iframeLoadCount < 2) return; // ignore initial about:blank load
+      clearTimeout(submitTimeout);
+      setSubmitting(false);
+      showSuccess({
+        folderUrl: form.dataset.lastFolder || '',
+        email: form.dataset.lastEmail || '',
+        clientName: form.dataset.lastClient || ''
+      });
+    });
+
+    // 30-second timeout fallback
+    let submitTimeout = null;
+    form.addEventListener('submit', () => {
+      clearTimeout(submitTimeout);
+      submitTimeout = setTimeout(() => {
+        if (submitBtn.disabled) {
+          setSubmitting(false);
+          showError("The agent took longer than expected. Your request may still be processing — check your inbox in a few minutes.");
+        }
+      }, 30000);
     });
   </script>
 </body>
